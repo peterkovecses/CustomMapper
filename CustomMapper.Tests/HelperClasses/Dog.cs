@@ -16,5 +16,10 @@
         {
             get { return _variety; }
         }
+
+        public void SetVariety(string variety)
+        {
+            _variety = variety;
+        }
     }
 }

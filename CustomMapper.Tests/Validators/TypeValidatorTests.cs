@@ -76,9 +76,7 @@ namespace CustomMapper.Tests.Validators
             var targetType = typeof(string);
 
             // Act & Assert
-#pragma warning disable CS8604
             Assert.Throws<ArgumentNullException>(() => _sut.CheckTypesForNull(sourceType, targetType));
-#pragma warning restore CS8604
         }
 
         [Fact]
@@ -89,9 +87,7 @@ namespace CustomMapper.Tests.Validators
             Type? targetType = null;
 
             // Act & Assert
-#pragma warning disable CS8604
             Assert.Throws<ArgumentNullException>(() => _sut.CheckTypesForNull(sourceType, targetType));
-#pragma warning restore CS8604
         }
 
         [Fact]
@@ -115,9 +111,7 @@ namespace CustomMapper.Tests.Validators
             var propertyInfo = typeof(Dog).GetProperty("Id");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapSourceProperty(propertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.False(actual);
@@ -130,9 +124,7 @@ namespace CustomMapper.Tests.Validators
             var propertyInfo = typeof(Dog).GetProperty("Name");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapSourceProperty(propertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.True(actual);
@@ -145,9 +137,7 @@ namespace CustomMapper.Tests.Validators
             var propertyInfo = typeof(Dog).GetProperty("Variety");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapTargetProperty(propertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.False(actual);
@@ -160,9 +150,7 @@ namespace CustomMapper.Tests.Validators
             var propertyInfo = typeof(Dog).GetProperty("Name");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapTargetProperty(propertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.True(actual);
@@ -176,9 +164,7 @@ namespace CustomMapper.Tests.Validators
             var targetPropertyInfo = typeof(UserDto).GetProperty("TaxCode");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapByAttribute(sourcePropertyInfo, targetPropertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.False(actual);
@@ -192,9 +178,7 @@ namespace CustomMapper.Tests.Validators
             var targetPropertyInfo = typeof(MembershipTypeDto).GetProperty("Id2");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapByAttribute(sourcePropertyInfo, targetPropertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.True(actual);
@@ -208,9 +192,7 @@ namespace CustomMapper.Tests.Validators
             var targetPropertyInfo = typeof(MembershipType).GetProperty("Price");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapByAttribute(sourcePropertyInfo, targetPropertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.False(actual);
@@ -224,9 +206,7 @@ namespace CustomMapper.Tests.Validators
             var targetPropertyInfo = typeof(MembershipTypeDto).GetProperty("Id");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapByPropertyName(sourcePropertyInfo, targetPropertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.False(actual);
@@ -240,9 +220,7 @@ namespace CustomMapper.Tests.Validators
             var targetPropertyInfo = typeof(MembershipType).GetProperty("DiscountRate");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapByPropertyName(sourcePropertyInfo, targetPropertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.True(actual);
@@ -256,9 +234,7 @@ namespace CustomMapper.Tests.Validators
             var targetPropertyInfo = typeof(MembershipType).GetProperty("Name2");
 
             // Act
-#pragma warning disable CS8604
             var actual = _sut.CanMapByPropertyName(sourcePropertyInfo, targetPropertyInfo);
-#pragma warning restore CS8604
 
             // Assert
             Assert.False(actual);

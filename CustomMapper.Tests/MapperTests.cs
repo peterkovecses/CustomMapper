@@ -55,9 +55,7 @@ namespace CustomMapper.Tests
             source = null;
 
             // Act & Assert
-#pragma warning disable CS8604
             Assert.Throws<ArgumentNullException>(() => _sut.Map<User, UserDto>(source));
-#pragma warning restore CS8604
         }
 
         [Fact]
