@@ -6,6 +6,9 @@ namespace CustomMapper.Tests.HelperClasses
     {
         public int Id { get; set; }
 
+        [MapFrom("TaxCode")]
+        public int TaxNumber { get; set; }
+
         [MapFrom("FullName")]
         public string Name { get; set; }
 

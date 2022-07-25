@@ -13,6 +13,9 @@ namespace CustomMapper.Tests.HelperClasses
         public byte Id3 { get; set; }
 
         public string Name { get; set; }
+
+        [MapFrom("Cost")]
+        public decimal Price { get; set; }
         public byte DiscountRate { get; set; }
     }
 }

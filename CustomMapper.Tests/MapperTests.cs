@@ -48,7 +48,7 @@ namespace CustomMapper.Tests
         }
 
         [Fact]
-        public void MyCustomMapper_MapWhenSourceIsNull_ThrowArgumentNullException()
+        public void MyCustomMapper_MapWhenSourceIsNull_ThrowsArgumentNullException()
         {
             // Arrange
             var source = new User();

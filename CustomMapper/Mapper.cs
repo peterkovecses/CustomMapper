@@ -1,15 +1,38 @@
 ﻿using CustomMapper.Attributes;
 using CustomMapper.Interfaces;
 using CustomMapper.Models;
+using CustomMapper.Validators;
 using System.Collections;
 using System.Reflection;
 
 namespace CustomMapper
 {
+    /// <summary>
+    /// It is an object to object mapper for .NET. Not for all types, just for practicing Reflection.
+    /// </summary>
     public class Mapper : ICustomMapper
     {
-        private readonly Dictionary<string, PropertyMap[]> _maps = new();
+        private readonly Dictionary<string, PropertyMap[]> _maps;
+        private readonly ITypeValidator _typeValidator;
 
+        public Mapper(ITypeValidator typeValidator)
+        {
+            _maps = new Dictionary<string, PropertyMap[]>();
+            _typeValidator = typeValidator;
+        }
+
+        public Mapper() : 
+            this(new TypeValidator())
+        {
+
+        }
+
+        /// Execute mapping from the source object to a new target object.
+        /// </summary>
+        /// <typeparam name="T1">Source type</typeparam>
+        /// <typeparam name="T2">Target type</typeparam>
+        /// <param name="source">Source object to map from</param>
+        /// <returns>Mapped target object</returns>
         public T2 Map<T1, T2>(T1 source) where T1 : class where T2 : class, new()
         {
             if (source == null)
@@ -18,7 +41,7 @@ namespace CustomMapper
             return GetTargetItem<T2>(source);
         }
 
-        private T2 GetTargetItem<T2>(object source) where T2 : class, new()
+        private T2 GetTargetItem<T2>(object source) where T2 : class, new() 
         {
             var target = new T2();
 
@@ -70,7 +93,7 @@ namespace CustomMapper
 
                 if (sourceValue != null)
                 {
-                    if (!AreDifferentReferenceTypes(propertyMap.SourcePropertyInfo.PropertyType, propertyMap.TargetPropertyInfo.PropertyType))
+                    if (!_typeValidator.AreDifferentReferenceTypes(propertyMap.SourcePropertyInfo.PropertyType, propertyMap.TargetPropertyInfo.PropertyType))
                     {
                         propertyMap.TargetPropertyInfo.SetValue(target, sourceValue, null);
                     }
@@ -89,101 +112,22 @@ namespace CustomMapper
             }
         }
 
-        private static bool AreDifferentReferenceTypes(Type sourceType, Type targetType)
+        private IEnumerable<PropertyMap> GetPropertyMaps(Type sourceType, Type targetType)
         {
-            if (!sourceType.IsClass)
-            {
-                return false;
-            }
+            _typeValidator.CheckTypesForNull(sourceType, targetType);
 
-            return sourceType != targetType;
-        }
-
-        private static IEnumerable<PropertyMap> GetPropertyMaps(Type sourceType, Type targetType)
-        {
-            CheckTypesForNull(sourceType, targetType);
-
-            var sourcePropertyInfos = sourceType.GetProperties().Where(p => CanMapSourceProperty(p));
-            var targetPropertyInfos = targetType.GetProperties().Where(p => CanMapTargetProperty(p));
+            var sourcePropertyInfos = sourceType.GetProperties().Where(p => _typeValidator.CanMapSourceProperty(p));
+            var targetPropertyInfos = targetType.GetProperties().Where(p => _typeValidator.CanMapTargetProperty(p));
 
             return CreatePropertyMaps(sourcePropertyInfos, targetPropertyInfos);
         }
 
-        private static void CheckTypesForNull(Type sourceType, Type targetType)
+        private IEnumerable<PropertyInfo> CheckForSuitableTargetProperty(PropertyInfo sourcePropertyInfo, IEnumerable<PropertyInfo> targetPropertyInfos)
         {
-            if (sourceType == null || targetType == null)
-            {
-                throw new ArgumentNullException(nameof(sourceType));
-            }
+            return targetPropertyInfos.Where(p => _typeValidator.CanMapByAttribute(sourcePropertyInfo, p) || _typeValidator.CanMapByPropertyName(sourcePropertyInfo, p));
         }
 
-        private static bool CanMapSourceProperty(PropertyInfo propertyInfo)
-        {
-            return propertyInfo.CanRead && ValidateType(propertyInfo);
-        }
-
-        private static bool CanMapTargetProperty(PropertyInfo propertyInfo)
-        {
-            return propertyInfo.CanWrite && !HasMapIgnoreAttribute(propertyInfo) && ValidateType(propertyInfo);
-        }
-
-        private static bool ValidateType(PropertyInfo propertyInfo)
-        {
-            var type = propertyInfo.PropertyType;
-            return type.IsValueType || IsString(type) || IsCompatibleClass(type);
-        }
-
-        private static bool HasMapIgnoreAttribute(PropertyInfo propertyInfo)
-        {
-            return propertyInfo.GetCustomAttributes(typeof(MapIgnoreAttribute), true).Any();
-        }
-
-        private static bool IsString(Type type)
-        {
-            return type == typeof(string);
-        }
-
-        private static bool IsCompatibleClass(Type type)
-        {
-            if (!type.IsClass)
-            {
-                return false;
-            }
-
-            if (type.GetInterfaces().Any(i => i == typeof(ICollection)) || type.GetInterfaces().Any(i => i.GetGenericTypeDefinition() == typeof(ICollection<>)))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static IEnumerable<PropertyInfo> CheckForSuitableTargetProperty(PropertyInfo sourcePropertyInfo, IEnumerable<PropertyInfo> targetPropertyInfos)
-        {
-            return targetPropertyInfos.Where(p => CanMapByAttribute(p, sourcePropertyInfo) || CanMapByPropertyName(p, sourcePropertyInfo));
-        }
-
-        private static bool CanMapByAttribute(PropertyInfo p, PropertyInfo sourcePropertyInfo)
-        {
-            return p.GetCustomAttribute<MapFromAttribute>()?.Name == sourcePropertyInfo.Name && !IsValueTypeConflict(p, sourcePropertyInfo);
-        }
-
-        private static bool CanMapByPropertyName(PropertyInfo p, PropertyInfo sourcePropertyInfo)
-        {
-            return p.GetCustomAttribute<MapFromAttribute>() == null && p.Name == sourcePropertyInfo.Name && !IsValueTypeConflict(p, sourcePropertyInfo);
-        }
-
-        private static bool IsValueTypeConflict(PropertyInfo p, PropertyInfo sourcePropertyInfo)
-        {
-            if (!p.PropertyType.IsValueType)
-            {
-                return false;
-            }
-
-            return p.PropertyType != sourcePropertyInfo.PropertyType;
-        }
-
-        private static IEnumerable<PropertyMap> CreatePropertyMaps(IEnumerable<PropertyInfo> sourcePropertyInfos, IEnumerable<PropertyInfo> targetPropertyInfos)
+        private IEnumerable<PropertyMap> CreatePropertyMaps(IEnumerable<PropertyInfo> sourcePropertyInfos, IEnumerable<PropertyInfo> targetPropertyInfos)
         {
             foreach (var sourcePropertyInfo in sourcePropertyInfos)
             {
